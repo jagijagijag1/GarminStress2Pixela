@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"regexp"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -56,8 +55,11 @@ func Handler(ctx context.Context, s3Event events.S3Event) error {
 func getS3ObjectFromRecord(record events.S3EventRecord) (string, string) {
 	s := record.S3
 	bucket := s.Bucket.Name
-	rep := regexp.MustCompile(`[¥+]`)
-	key := rep.ReplaceAllString(s.Object.Key, " ")
+	key := s.Object.Key
+
+	key = strings.Replace(key, "+", " ", -1)
+	key = strings.Replace(key, "%3A", ":", -1)
+	key = strings.Replace(key, "%2C", ",", -1)
 
 	return bucket, key
 }
